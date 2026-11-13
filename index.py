@@ -9,7 +9,7 @@ MMH CONTROL — موقع تحكم في البوت (ملف واحد) للرفع �
 import hashlib, hmac, json, os, time, urllib.error, urllib.request
 from datetime import datetime, timedelta, timezone
 
-TOKEN = os.environ.get("DISCORD_TOKEN", "MTUyMDQxMTkyOTQyNjkxOTQ4NQ.G8aG6r.ZE1PuZz8VzeyUE4eSGqJNJtbRc3HDL6ihSEYJg")
+TOKEN = os.environ.get("DISCORD_TOKEN", "")
 PASSWORD = os.environ.get("DASH_PASSWORD", "997816")
 SECRET = (TOKEN or "mmh") + PASSWORD
 API = "https://discord.com/api/v10"
