@@ -9,7 +9,7 @@ MMH CONTROL — موقع تحكم في البوت (ملف واحد) للرفع �
 import hashlib, hmac, json, os, time, urllib.error, urllib.request
 from datetime import datetime, timedelta, timezone
 
-TOKEN = os.environ.get("DISCORD_TOKEN", "")
+TOKEN = os.environ.get("DISCORD_TOKEN", "MTUyMDQxMTkyOTQyNjkxOTQ4NQ.G8aG6r.ZE1PuZz8VzeyUE4eSGqJNJtbRc3HDL6ihSEYJg")
 PASSWORD = os.environ.get("DASH_PASSWORD", "997816")
 SECRET = (TOKEN or "mmh") + PASSWORD
 API = "https://discord.com/api/v10"
@@ -108,29 +108,53 @@ def h_mod(d):
 ROUTES = {"state": h_state, "channels": h_channels, "send": h_send, "messages": h_messages, "delete": h_delete, "mod": h_mod}
 
 
-def app(environ, start_response):
-    def out(code, body, ctype="application/json; charset=utf-8"):
-        data = body if isinstance(body, bytes) else (body if isinstance(body, str) else json.dumps(body, ensure_ascii=False)).encode()
-        start_response(code, [("Content-Type", ctype), ("Cache-Control", "no-store")])
-        return [data]
+def process(method, path, token, raw):
+    J = "application/json; charset=utf-8"
+    path = (path or "/").split("?")[0]
+    if method != "POST" or not path.startswith("/api/"):
+        return 200, "text/html; charset=utf-8", PAGE.encode("utf-8")
 
-    path = environ.get("PATH_INFO", "/")
-    if environ["REQUEST_METHOD"] != "POST" or not path.startswith("/api/"):
-        return out("200 OK", PAGE, "text/html; charset=utf-8")
+    def js(code, obj):
+        return code, J, json.dumps(obj, ensure_ascii=False).encode("utf-8")
+
     name = path[5:].strip("/")
     try:
-        n = int(environ.get("CONTENT_LENGTH") or 0)
-        d = json.loads(environ["wsgi.input"].read(n) or b"{}")
+        d = json.loads(raw or b"{}")
         if name == "login":
             time.sleep(0.8)
             if hmac.compare_digest(str(d.get("password", "")).encode(), PASSWORD.encode()):
-                return out("200 OK", {"token": sign(int(time.time()) + 86400)})
-            return out("403 Forbidden", {"error": "الباسورد غلط"})
-        if not valid(environ.get("HTTP_X_TOKEN", "")) or name not in ROUTES:
-            return out("401 Unauthorized", {"error": "unauthorized"})
-        return out("200 OK", ROUTES[name](d))
+                return js(200, {"token": sign(int(time.time()) + 86400)})
+            return js(403, {"error": "الباسورد غلط"})
+        if not valid(token or "") or name not in ROUTES:
+            return js(401, {"error": "unauthorized"})
+        return js(200, ROUTES[name](d))
     except Exception as ex:
-        return out("400 Bad Request", {"error": str(ex)[:250] or "خطأ"})
+        return js(400, {"error": str(ex)[:250] or "خطأ"})
+
+
+from http.server import BaseHTTPRequestHandler
+
+
+class handler(BaseHTTPRequestHandler):
+    def _go(self, method):
+        n = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(n) if n else b""
+        code, ctype, body = process(method, self.path, self.headers.get("X-Token"), raw)
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        self._go("GET")
+
+    def do_POST(self):
+        self._go("POST")
+
+    def log_message(self, *a):
+        pass
 
 
 PAGE = r'''<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
