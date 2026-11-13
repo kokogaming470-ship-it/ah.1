@@ -3,7 +3,7 @@
 MMH CONTROL — موقع تحكم في البوت (ملف واحد) للرفع على Vercel من GitHub.
 - سمّي الملف app.py وارفعه على GitHub لوحده (مفيش حاجة تانية مطلوبة).
 - في Vercel > Settings > Environment Variables ضيف:  DISCORD_TOKEN = توكن البوت
-  (اختياري) DASH_PASSWORD لتغيير الباسورد — الافتراضي 997816
+  مفيش باسورد — أي حد معاه الرابط يقدر يتحكم
 - البوت نفسه يفضل شغال مكانه؛ الموقع بيكلّم Discord مباشرة بنفس التوكن.
 """
 import hashlib, hmac, json, os, time, urllib.error, urllib.request
@@ -125,7 +125,7 @@ def process(method, path, token, raw):
             if hmac.compare_digest(str(d.get("password", "")).encode(), PASSWORD.encode()):
                 return js(200, {"token": sign(int(time.time()) + 86400)})
             return js(403, {"error": "الباسورد غلط"})
-        if not valid(token or "") or name not in ROUTES:
+        if name not in ROUTES:
             return js(401, {"error": "unauthorized"})
         return js(200, ROUTES[name](d))
     except Exception as ex:
@@ -173,7 +173,7 @@ body{background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
 @keyframes pulse{0%{box-shadow:0 0 0 0 #2ecc71aa}100%{box-shadow:0 0 0 12px #2ecc7100}}
 @keyframes eq{0%,100%{height:6px}50%{height:34px}}@keyframes sh{to{background-position:200% 0}}
 .logo{font-weight:900;font-size:2.2rem;background:linear-gradient(90deg,var(--p),var(--c),var(--k),var(--p));background-size:200% 100%;-webkit-background-clip:text;color:transparent;animation:sh 4s linear infinite}
-#login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;transition:.7s}#login.out{opacity:0;transform:scale(1.15);pointer-events:none}
+#login{display:none!important;position:fixed;inset:0;z-index:20;display:grid;place-items:center;transition:.7s}#login.out{opacity:0;transform:scale(1.15);pointer-events:none}
 .lc{width:min(400px,90vw);padding:40px 32px;text-align:center;border-radius:28px;background:var(--g);border:1px solid var(--b);backdrop-filter:blur(24px);animation:up .9s both;position:relative}
 .lc:before,.card:before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:conic-gradient(from var(--a,0deg),transparent 60%,var(--p),var(--c),transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:rot 5s linear infinite;pointer-events:none}
 @property --a{syntax:"<angle>";inherits:false;initial-value:0deg}@keyframes rot{to{--a:360deg}}
@@ -240,7 +240,7 @@ input[type=range]{padding:0;accent-color:var(--p);height:8px}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 let TK=sessionStorage.getItem('tk')||'',tab='home',tm;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-async function api(n,d={}){const r=await fetch('/api/'+n,{method:'POST',headers:{'Content-Type':'application/json','X-Token':TK},body:JSON.stringify(d)});const j=await r.json().catch(()=>({error:'خطأ'}));if(r.status==401&&n!='login'){logout();throw 0}if(j.error)throw new Error(j.error);return j}
+async function api(n,d={}){const r=await fetch('/api/'+n,{method:'POST',headers:{'Content-Type':'application/json','X-Token':TK},body:JSON.stringify(d)});const j=await r.json().catch(()=>({error:'خطأ'}));if(j.error)throw new Error(j.error);return j}
 function toast(m,e){const t=document.createElement('div');t.className='ts'+(e?' e':'');t.textContent=m;$('#toast').append(t);setTimeout(()=>t.remove(),3200)}
 async function act(n,d,m){try{const r=await api(n,d);toast(m||'تم ✓');return r}catch(e){e&&toast(e.message,1)}}
 function logout(){sessionStorage.clear();location.reload()}
@@ -265,6 +265,6 @@ $('#mb').onclick=()=>{const a=$('#ma').value;if(['ban','kick'].includes(a)&&!con
 const cv=$('#bg'),cx=cv.getContext('2d');let W,H,P=[];function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();onresize=rs;
 for(let i=0;i<70;i++)P.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.5,vy:(Math.random()-.5)*.5});
 (function d(){cx.clearRect(0,0,W,H);P.forEach((a,i)=>{a.x=(a.x+a.vx+W)%W;a.y=(a.y+a.vy+H)%H;cx.fillStyle='#b9a0ff99';cx.beginPath();cx.arc(a.x,a.y,1.6,0,7);cx.fill();for(let j=i+1;j<P.length;j++){const b=P[j],l=Math.hypot(a.x-b.x,a.y-b.y);if(l<120){cx.strokeStyle=`rgba(155,89,255,${.25*(1-l/120)})`;cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}}});requestAnimationFrame(d)})();
-if(TK)enter();
+enter();
 </script>
 </body></html>'''
